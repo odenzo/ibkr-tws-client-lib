@@ -1,6 +1,6 @@
-package com.odenzo.ibkr.gateway
+package com.odenzo.ibkr.tws
 
-import com.odenzo.ibkr.gateway.models.ConnectionInfo
+import com.odenzo.ibkr.tws.models.ConnectionInfo
 
 object TWSConfig {
 

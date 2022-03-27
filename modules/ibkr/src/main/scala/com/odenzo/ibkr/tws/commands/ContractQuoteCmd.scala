@@ -1,4 +1,4 @@
-package com.odenzo.ibkr.gateway.commands
+package com.odenzo.ibkr.tws.commands
 
 import cats.effect.*
 import cats.effect.syntax.all.*
@@ -7,9 +7,10 @@ import cats.data.*
 import cats.effect.std.Queue
 import cats.implicits.*
 import com.ib.client.{Contract, ContractDetails}
-import com.odenzo.ibkr.gateway.IBClient
-import com.odenzo.ibkr.gateway.models.*
-import com.odenzo.ibkr.gateway.models.SimpleTypes.*
+import com.odenzo.ibkr.tws.IBClient
+import com.odenzo.ibkr.tws.models.*
+import com.odenzo.ibkr.models.tws.*
+import com.odenzo.ibkr.models.tws.SimpleTypes.*
 
 /** You may just want to latest quote, or to get a stream. Experiment with a State instead of mutable var. */
 class ContractQuoteTicket(val rqId: RqId, rq: Contract) extends TicketWithId {

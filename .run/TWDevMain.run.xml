@@ -1,10 +1,12 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="TWDevMain" type="Application" factoryName="Application">
-    <option name="MAIN_CLASS_NAME" value="com.odenzo.ibkr.gateway.TWDevMain" />
-    <module name="modules.ibkr" />
+    <option name="ALTERNATIVE_JRE_PATH" value="corretto-11" />
+    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+    <option name="MAIN_CLASS_NAME" value="com.odenzo.ibkr.tws.TWDevMain" />
+    <module name="ibkr-tws" />
     <extension name="coverage">
       <pattern>
-        <option name="PATTERN" value="com.odenzo.ibkr.gateway.models.*" />
+        <option name="PATTERN" value="com.odenzo.ibkr.tws.models.*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>

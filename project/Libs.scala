@@ -20,12 +20,13 @@ object V {
   val munitCats          = "1.0.7"
   val munit              = "1.0.0-M3"
   val oslib              = "0.8.1"
-  val pprint             = "0.7.2"
+  val pprint             = "0.7.3"
   val scalaXML           = "2.0.1"
   val scodecBits         = "1.18"
   val scodecCats         = "1.0.0"
   val scodec             = "1.11.7"
   val scribe             = "3.8.2"
+  val scribeCats         = "3.8.2"
   val squants            = "1.7.0"
   val sttpClient         = "3.5.1"
   val tapir              = "0.20.1"
@@ -92,8 +93,10 @@ object Libs {
     "com.softwaremill.sttp.client3" %% "circe" % V.sttpClient
   )
 
-  val scribe      = Seq("com.outr" %% "scribe" % V.scribe, "ch.qos.logback" % "logback-classic" % V.logback)
+  val scribe      = Seq("com.outr" %% "scribe" % V.scribe)
   val scribeSLF4J = Seq("com.outr" %% "scribe-slf4j" % V.scribe)
+  val scribeCats  = Seq("com.outr" %% "scribe-cats" % V.scribeCats)
+  val logback     = Seq("ch.qos.logback" % "logback-classic" % V.logback)
 
   val circe = Seq(
     "io.circe" %% "circe-core"    % V.circe,
@@ -114,8 +117,8 @@ object Libs {
   val http4s = Seq(
     //  "io.circe"       %% "circe-spire"          % "0.1.0",   Meh, stuck at 2.12
     "org.http4s" %% "http4s-dsl"          % V.http4s,
-    "org.http4s" %% "http4s-blaze-server" % V.http4s,
-    "org.http4s" %% "http4s-blaze-client" % V.http4s,
+    "org.http4s" %% "http4s-ember-server" % V.http4s,
+    "org.http4s" %% "http4s-ember-client" % V.http4s,
     "org.http4s" %% "http4s-circe"        % V.http4s,
     "org.http4s" %% "http4s-scala-xml"    % V.http4s
     // "org.http4s" %% "http4s-scalatags" % http4sVersion,
@@ -136,7 +139,7 @@ object Libs {
   //    "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.12.1"
   //  )
 
-  val all: Seq[ModuleID] = testing ++ cats ++ fs2 ++ monocle ++ standard ++ scribe ++ circe ++ http4s ++ doobie
+  val all: Seq[ModuleID] = testing ++ cats ++ fs2 ++ monocle ++ standard ++ scribe ++ circe ++ http4s ++ doobie ++ scribeCats ++ scribeSLF4J
 }
 
 object XLib {

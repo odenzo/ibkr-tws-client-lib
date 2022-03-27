@@ -1,9 +1,12 @@
-package com.odenzo.ibkr.gateway
+package com.odenzo.ibkr.tws
 
-import com.odenzo.ibkr.gateway.commands.*
-import com.odenzo.ibkr.gateway.models.SimpleTypes.RqId
+import com.odenzo.ibkr.tws.commands.*
 
+import com.odenzo.ibkr.models.tws.*
+import com.odenzo.ibkr.models.tws.SimpleTypes.*
 import scala.collection.mutable
+import com.odenzo.ibkr.models.tws.*
+import com.odenzo.ibkr.models.tws.SimpleTypes.*
 
 /**
  * Usually one per IBWrapper, seperated out for future improvements and experiments. Note this is a mutable Map and we sometimes may leave

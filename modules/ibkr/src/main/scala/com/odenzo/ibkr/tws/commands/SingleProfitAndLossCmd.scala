@@ -1,24 +1,23 @@
-package com.odenzo.ibkr.gateway.commands
+package com.odenzo.ibkr.tws.commands
 
-import cats.effect.{given, *}
-import cats.effect.syntax.all.{given, *}
+import cats.effect.{*, given}
+import cats.effect.syntax.all.{*, given}
 import cats.*
 import cats.data.*
 import cats.implicits.*
 import com.ib.client.Contract
-import com.odenzo.ibkr.gateway.IBClient
-import com.odenzo.ibkr.gateway.models.*
-import com.odenzo.ibkr.gateway.models.SimpleTypes.*
-import cats.*
-import cats.data.*
+import com.odenzo.ibkr.tws.IBClient
+import com.odenzo.ibkr.tws.models.*
 import cats.effect.std.{*, given}
-import cats.implicits.{*, given}
 import fs2.{*, given}
 
 import java.time.Instant
 import scala.collection.mutable
-
 import com.ib.client.EWrapperMsgGenerator
+import com.odenzo.ibkr.models.OPrint
+import com.odenzo.ibkr.models.tws.SimpleTypes.IBAccount
+import com.odenzo.ibkr.models.tws.*
+import com.odenzo.ibkr.models.tws.SimpleTypes.*
 
 case class PnLSingle(
     pos: BigDecimal,
@@ -54,7 +53,7 @@ class SingleProfitAndLossRq(val account: IBAccount, val modelCode: String, val c
     rqId: RqId <- client.nextRequestId()
     ticket      = SingleProfitAndLossTicket(rqId, this)
     _           = client.addTicket(ticket)
-    _           = scribe.info(s"Submitting with Ticket: ${pprint(ticket)}")
+    _           = scribe.info(s"Submitting with Ticket: ${OPrint.oprint(ticket)}")
     _           = client.server.reqPnLSingle(rqId.toInt, account, modelCode, contractId)
   } yield ticket
 

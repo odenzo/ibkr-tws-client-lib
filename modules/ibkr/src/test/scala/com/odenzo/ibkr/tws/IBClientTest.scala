@@ -1,4 +1,4 @@
-package com.odenzo.ibkr.gateway
+package com.odenzo.ibkr.tws
 
 import cats.effect.*
 import cats.effect.implicits.{given, *}

@@ -1,12 +1,13 @@
-package com.odenzo.ibkr.gateway
+package com.odenzo.ibkr.tws
 
 import com.ib.client.*
 import cats.effect.syntax.*
 import cats.effect.{*, given}
 
-import com.odenzo.ibkr.gateway.commands.*
-import com.odenzo.ibkr.gateway.models.{ConnectionInfo, IBClientConfig, IBContract}
-import com.odenzo.ibkr.gateway.models.SimpleTypes.RqId
+import com.odenzo.ibkr.tws.commands.*
+import com.odenzo.ibkr.tws.models.{ConnectionInfo, IBClientConfig}
+import com.odenzo.ibkr.models.tws.{IBContract, *}
+import com.odenzo.ibkr.models.tws.SimpleTypes.*
 
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger}
 import java.{lang, util}

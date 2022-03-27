@@ -1,4 +1,4 @@
-package com.odenzo.ibkr.gateway.commands
+package com.odenzo.ibkr.tws.commands
 
 import cats.effect.*
 import cats.effect.syntax.all.*
@@ -8,10 +8,10 @@ import cats.data.*
 import cats.implicits.*
 
 import com.ib.client.Contract
-import com.odenzo.ibkr.gateway.IBClient
-import com.odenzo.ibkr.gateway.models.*
-import com.odenzo.ibkr.gateway.models.SimpleTypes.*
-
+import com.odenzo.ibkr.tws.IBClient
+import com.odenzo.ibkr.tws.models.*
+import com.odenzo.ibkr.models.tws.*
+import com.odenzo.ibkr.models.tws.SimpleTypes.*
 open class AccountSummaryTicket(val rqId: RqId, rq: AccountSummaryRq)(using ibClient: IBClient) extends TicketWithId with TicketWithCancel {
 
   protected val client: IBClient = ibClient

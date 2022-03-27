@@ -1,4 +1,4 @@
-package com.odenzo.ibkr.gateway
+package com.odenzo.ibkr.tws
 
 import cats.Id
 import cats.data.Chain
@@ -6,9 +6,9 @@ import cats.effect.{*, given}
 import cats.effect.std.Dispatcher
 import cats.effect.syntax.{*, given}
 import com.ib.client.*
-import com.odenzo.ibkr.gateway.commands.*
-import com.odenzo.ibkr.gateway.models.SimpleTypes.*
-
+import com.odenzo.ibkr.tws.commands.*
+import com.odenzo.ibkr.models.tws.*
+import com.odenzo.ibkr.models.tws.SimpleTypes.*
 import java.time.LocalDateTime
 import java.util.concurrent.atomic.AtomicBoolean
 import java.{lang, util}

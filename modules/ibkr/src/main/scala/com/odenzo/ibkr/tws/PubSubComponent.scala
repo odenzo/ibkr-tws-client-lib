@@ -1,4 +1,4 @@
-package com.odenzo.ibkr.gateway
+package com.odenzo.ibkr.tws
 
 import cats.effect.{Async, Concurrent, IO}
 import cats.effect.std.{Dispatcher, Queue}
