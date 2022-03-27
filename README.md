@@ -1,4 +1,4 @@
-## Scala 3 Experimental Project -  TWS API
+# IBKR TWS API
 
 Still experimental, but usable for connecting to TWS/IB Gateway and using:
 
