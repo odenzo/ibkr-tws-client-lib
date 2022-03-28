@@ -9,14 +9,17 @@ import cats.implicits.*
 import com.ib.controller.AccountSummaryTag
 import com.odenzo.ibkr.tws.commands.*
 import com.odenzo.ibkr.tws.models.{ConnectionInfo, IBClientConfig}
-import com.odenzo.ibkr.models.tws.{IBContract, *}
+import com.odenzo.ibkr.models.tws.*
 import com.odenzo.ibkr.models.tws.SimpleTypes.*
+
 import scala.concurrent.duration.*
 import java.util.Currency
 import com.ib.controller.AccountSummaryTag.*
 import com.odenzo.ibkr.tws.models.*
 import scribe.Scribe
-import _root_.scribe.cats.{io => scribeIO}
+import _root_.scribe.cats.io as scribeIO
+import com.odenzo.ibkr.tws.commands.hybrid.ContractQuoteRq
+import com.odenzo.ibkr.tws.commands.subscriptions.{AccountUpdatesRq, PositionsRq}
 
 /** A crude test app / example */
 object TWDevMain extends IOApp {

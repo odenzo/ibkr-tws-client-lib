@@ -1,13 +1,16 @@
 package com.odenzo.ibkr.tws
 
 import com.ib.client.*
-import cats.effect.syntax.*
-import cats.effect.{*, given}
-
+import cats.*
+import cats.data.*
+import cats.syntax.all.*
+import cats.effect.syntax.all.*
+import cats.effect.*
 import com.odenzo.ibkr.tws.commands.*
 import com.odenzo.ibkr.tws.models.{ConnectionInfo, IBClientConfig}
 import com.odenzo.ibkr.models.tws.{IBContract, *}
 import com.odenzo.ibkr.models.tws.SimpleTypes.*
+import com.odenzo.ibkr.tws.commands.subscriptions.{AccountUpdatesTicket, PositionsTicket}
 
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger}
 import java.{lang, util}
@@ -34,20 +37,19 @@ class IBClient(val config: IBClientConfig, val wrapper: IBWrapper, val eClientSo
   def addPositionsHandler(handler: PositionsTicket): Unit = wrapper.addPositionsHandler(handler)
 
   /** There can be more than one account updates handler but only one subscription to one account */
-  def addAccountUpdatesHandler(handler: AccountUpdatesTicket)    = wrapper.addAccountUpdatesHandler(handler)
+  def addAccountUpdatesHandler(handler: AccountUpdatesTicket) = wrapper.addAccountUpdatesHandler(handler)
+
   def removeAccountUpdatesHandler(handler: AccountUpdatesTicket) = wrapper.removeAccountUpdatesHandler(handler)
 
 }
 
-/** TODO:Factory Method to create IBClient and deal with its cleanup if needed */
 object IBClient:
   private var clientId: AtomicInteger = new AtomicInteger(1)
 
   /** TODO: Ensure in range 1...32 so really we need a Map of these and close on client close */
   def nextClientId: Int = clientId.getAndIncrement()
 
-  def setup(config: IBClientConfig)(using F: Async[IO]): IO[IBClient] = {
-
+  def setup(config: IBClientConfig): IO[IBClient] = {
     for {
       _        <- IO(scribe.info(s"Setting Up Client: ${pprint(config)}"))
       clientId  = config.clientId
@@ -104,3 +106,6 @@ object IBClient:
     val checkPreconditions: IO[Unit] = IO.raiseUnless(eClientSocket.isConnected)(new Throwable("Not Connected before starting EReader"))
     val startThreader: IO[Unit]      = IO.delay(eReader.start()).void
     checkPreconditions *> startThreader
+
+  def release(client: IBClient): IO[Unit]                        = IO(scribe.info(s"Should be releasing IBClient Resource"))
+  def asResource(config: IBClientConfig): Resource[IO, IBClient] = Resource.make(setup(config))(release)

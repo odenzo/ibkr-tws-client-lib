@@ -8,17 +8,16 @@ import cats.implicits.*
 import com.ib.client.Contract
 import com.odenzo.ibkr.tws.IBClient
 import com.odenzo.ibkr.tws.models.*
-
 import cats.*
 import cats.data.*
 import cats.effect.std.{*, given}
 import cats.implicits.{*, given}
 import fs2.{*, given}
-
 import java.time.Instant
 import scala.collection.mutable
 import com.odenzo.ibkr.models.tws.*
 import com.odenzo.ibkr.models.tws.SimpleTypes.*
+
 case class PnLAccount(dailyPnL: BigDecimal, unrealizedPnL: BigDecimal, realizedPnL: BigDecimal, recorded: Instant = Instant.now)
 
 /** This handles P&L for individual holding as well as at the account level. */

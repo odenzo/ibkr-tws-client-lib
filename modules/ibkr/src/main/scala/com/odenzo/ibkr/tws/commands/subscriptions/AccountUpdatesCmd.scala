@@ -1,20 +1,17 @@
-package com.odenzo.ibkr.tws.commands
-
-import cats.effect.{given, *}
-import cats.effect.syntax.all.{given, *}
-import cats.*
-import cats.data.*
-import cats.implicits.*
-import com.ib.client.Contract
-import com.odenzo.ibkr.tws.IBClient
-import com.odenzo.ibkr.tws.models.*
-import com.odenzo.ibkr.models.tws.*
-import com.odenzo.ibkr.models.tws.SimpleTypes.*
+package com.odenzo.ibkr.tws.commands.subscriptions
 
 import cats.*
 import cats.data.*
 import cats.effect.std.{*, given}
+import cats.effect.syntax.all.{*, given}
+import cats.effect.{*, given}
 import cats.implicits.{*, given}
+import com.ib.client.Contract
+import com.odenzo.ibkr.models.tws.*
+import com.odenzo.ibkr.models.tws.SimpleTypes.*
+import com.odenzo.ibkr.tws.IBClient
+import com.odenzo.ibkr.tws.commands.*
+import com.odenzo.ibkr.tws.models.*
 import fs2.{*, given}
 
 import java.time.Instant

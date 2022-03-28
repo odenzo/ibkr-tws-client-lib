@@ -134,12 +134,16 @@ object Libs {
     "org.tpolecat" %% "doobie-scalatest" % V.doobie % "test"
   )
 
+  val weaverTest = Seq("com.disneystreaming" %% "weaver-cats" % V.weaverTest % Test)
+
   //  Seq(
   //    "com.tersesystems.blindsight"  %% "blindsight-logstash"  % blindSightLogV,
   //    "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.12.1"
   //  )
 
-  val all: Seq[ModuleID] = testing ++ cats ++ fs2 ++ monocle ++ standard ++ scribe ++ circe ++ http4s ++ doobie ++ scribeCats ++ scribeSLF4J
+  val all: Seq[ModuleID] = cats ++ fs2 ++ monocle ++ standard ++ scribe ++ circe ++ http4s ++ scribeCats ++ scribeSLF4J
+
+  val testLibs = weaverTest ++ testing
 }
 
 object XLib {

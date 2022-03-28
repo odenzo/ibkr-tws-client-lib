@@ -12,11 +12,11 @@ import com.odenzo.ibkr.tws.IBClient
 import com.odenzo.ibkr.tws.models.*
 import com.odenzo.ibkr.models.tws.*
 import com.odenzo.ibkr.models.tws.SimpleTypes.*
+
 open class AccountSummaryTicket(val rqId: RqId, rq: AccountSummaryRq)(using ibClient: IBClient) extends TicketWithId with TicketWithCancel {
 
   protected val client: IBClient = ibClient
 
-  /** Typically details per contract, but contract object can match multiple contracts */
   def accountSummary(account: IBAccount, tag: IBTag, value: String, currency: String): Unit =
     scribe.info(s"CMD: Account Summary Info: ReqID: $rqId $tag $value ")
 

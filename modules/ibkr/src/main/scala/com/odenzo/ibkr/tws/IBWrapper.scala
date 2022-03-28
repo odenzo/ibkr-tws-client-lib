@@ -9,6 +9,10 @@ import com.ib.client.*
 import com.odenzo.ibkr.tws.commands.*
 import com.odenzo.ibkr.models.tws.*
 import com.odenzo.ibkr.models.tws.SimpleTypes.*
+import com.odenzo.ibkr.tws.commands.hybrid.ContractQuoteTicket
+import com.odenzo.ibkr.tws.commands.single.MatchingSymbolsTicket
+import com.odenzo.ibkr.tws.commands.subscriptions.{AccountUpdatesTicket, PositionsTicket}
+
 import java.time.LocalDateTime
 import java.util.concurrent.atomic.AtomicBoolean
 import java.{lang, util}
@@ -16,11 +20,11 @@ import java.{lang, util}
 type UpdateConnectedFn = (connected: Boolean) => IO[Unit]
 
 /**
- * For ReqId based callbacks this sends reponses to registered (id -> ticket) ticket. When no rqId, e.g. positions, a list of current
- * subscription is given. In future I may have one stream to subscribe also/instead.
+ * Stateful extension of the EWrapper callback. For ReqId based callbacks this sends reponses to registered (id -> ticket) ticket. When no
+ * rqId, e.g. positions, a list of current subscription is given. In future I may have one stream to subscribe also/instead.
  */
 class IBWrapper(clientId: Int)(using val F: Async[IO]) extends EWrapper {
-
+  import cats.effect.unsafe.implicits.global
   private var connected: AtomicBoolean = new AtomicBoolean(false)
 
   /** Async setting when our connection state changes to connected */
@@ -107,6 +111,7 @@ class IBWrapper(clientId: Int)(using val F: Async[IO]) extends EWrapper {
     scribe.info(s"AccountDownloadEnd $accountName")
 
   def accountSummary(reqId: Int, account: String, tag: String, value: String, currency: String): Unit =
+    scribe.info(s"AccountSummary $reqId")
     route(reqId, s"AccountSumary $reqId $account $tag $value $currency") {
       case ticket: ContractQuoteTicket  => scribe.error(s"Wrong Ticket Type for accountSummary callback")
       case ticket: AccountSummaryTicket => ticket.accountSummary(IBAccount(account), IBTag(tag), value, currency)
@@ -117,7 +122,7 @@ class IBWrapper(clientId: Int)(using val F: Async[IO]) extends EWrapper {
     scribe.info(s"AccountSummaryEnd $reqId")
 
   def accountUpdateMulti(reqId: Int, account: String, modelCode: String, key: String, value: String, currency: String): Unit =
-    scribe.info(s"AccountUpdateMulti")
+    scribe.info(s"AccountUpdateMulti $reqId")
 
   def accountUpdateMultiEnd(reqId: Int): Unit = scribe.info(s"AccountUpdateMultiEnd: $reqId")
 
@@ -126,7 +131,7 @@ class IBWrapper(clientId: Int)(using val F: Async[IO]) extends EWrapper {
   def commissionReport(commissionReport: com.ib.client.CommissionReport): Unit = scribe.info(s"commissionReport")
 
   def completedOrder(contract: com.ib.client.Contract, order: com.ib.client.Order, orderState: com.ib.client.OrderState): Unit =
-    scribe.info(s"AccountDownloadEnd")
+    scribe.info(s"completedOrder")
 
   def completedOrdersEnd(): Unit =
     scribe.info(s"completedOrdersEnd")
@@ -135,36 +140,36 @@ class IBWrapper(clientId: Int)(using val F: Async[IO]) extends EWrapper {
     scribe.info(s"Current Time $time")
 
   def deltaNeutralValidation(reqId: Int, deltaNeutralContract: com.ib.client.DeltaNeutralContract): Unit =
-    scribe.info(s"AccountDownloadEnd")
+    scribe.info(s"deltaNeutralValidation")
 
   def displayGroupList(reqId: Int, groups: String): Unit = scribe.info(s"DisplayGroupList $reqId $groups")
 
   def displayGroupUpdated(reqId: Int, contractInfo: String): Unit =
-    scribe.info(s"AccountDownloadEnd") // Not, we may need to wait for this before doing stuff, as part of init process
+    scribe.info(s"displayGroupUpdated") // Not, we may need to wait for this before doing stuff, as part of init process
 
   def execDetails(reqId: Int, contract: com.ib.client.Contract, execution: com.ib.client.Execution): Unit =
-    scribe.info(s"execDetails")
+    scribe.info(s"execDetails $reqId")
 
   def execDetailsEnd(reqId: Int): Unit = scribe.info(s"execDetailsEnd $reqId")
 
-  def familyCodes(familyCodes: Array[com.ib.client.FamilyCode]): Unit = scribe.info(s"AccountDownloadEnd")
+  def familyCodes(familyCodes: Array[com.ib.client.FamilyCode]): Unit = scribe.info(s"familyCodes")
 
-  def fundamentalData(reqId: Int, data: String): Unit = scribe.info(s"fundamentalData")
+  def fundamentalData(reqId: Int, data: String): Unit = scribe.info(s"fundamentalData $reqId")
 
-  def headTimestamp(reqId: Int, headTimestamp: String): Unit = scribe.info(s"headTimestamp")
+  def headTimestamp(reqId: Int, headTimestamp: String): Unit = scribe.info(s"headTimestamp $reqId")
 
   def histogramData(reqId: Int, items: java.util.List[com.ib.client.HistogramEntry]): Unit = scribe.info(s"histogramData")
 
-  def historicalData(reqId: Int, bar: com.ib.client.Bar): Unit = scribe.info(s"AccountDownloadEnd")
+  def historicalData(reqId: Int, bar: com.ib.client.Bar): Unit = scribe.info(s"historicalData")
 
-  def historicalDataEnd(reqId: Int, startDateStr: String, endDateStr: String): Unit = scribe.info(s"AccountDownloadEnd")
+  def historicalDataEnd(reqId: Int, startDateStr: String, endDateStr: String): Unit = scribe.info(s"historicalDataEnd")
 
-  def historicalDataUpdate(reqId: Int, bar: com.ib.client.Bar): Unit = scribe.info(s"AccountDownloadEnd")
+  def historicalDataUpdate(reqId: Int, bar: com.ib.client.Bar): Unit = scribe.info(s"historicalDataUpdate")
 
   def historicalNews(requestId: Int, time: String, providerCode: String, articleId: String, headline: String): Unit =
-    scribe.info(s"AccountDownloadEnd")
+    scribe.info(s"historicalNews")
 
-  def historicalNewsEnd(requestId: Int, hasMore: Boolean): Unit = scribe.info(s"AccountDownloadEnd")
+  def historicalNewsEnd(requestId: Int, hasMore: Boolean): Unit = scribe.info(s"historicalNewsEnd")
 
   def historicalSchedule(
       reqId: Int,
@@ -172,28 +177,28 @@ class IBWrapper(clientId: Int)(using val F: Async[IO]) extends EWrapper {
       endDateTime: String,
       timeZone: String,
       sessions: java.util.List[com.ib.client.HistoricalSession]
-  ): Unit = scribe.info(s"AccountDownloadEnd")
+  ): Unit = scribe.info(s"historicalSchedule")
 
   def historicalTicks(reqId: Int, ticks: java.util.List[com.ib.client.HistoricalTick], done: Boolean): Unit =
-    scribe.info(s"AccountDownloadEnd")
+    scribe.info(s"historicalTicks")
 
   def historicalTicksBidAsk(reqId: Int, ticks: java.util.List[com.ib.client.HistoricalTickBidAsk], done: Boolean): Unit =
-    scribe.info(s"AccountDownloadEnd")
+    scribe.info(s"historicalTicksBidAsk")
 
   def historicalTicksLast(reqId: Int, ticks: java.util.List[com.ib.client.HistoricalTickLast], done: Boolean): Unit =
-    scribe.info(s"AccountDownloadEnd")
+    scribe.info(s"historicalTicksLast")
 
   def managedAccounts(accountsList: String): Unit = scribe.info(s"Managed Accounts $accountsList")
 
   def marketDataType(reqId: Int, marketDataType: Int): Unit = scribe.info(s"marketDataType: $marketDataType $reqId ")
 
-  def marketRule(marketRuleId: Int, priceIncrements: Array[com.ib.client.PriceIncrement]): Unit = scribe.info(s"AccountDownloadEnd")
+  def marketRule(marketRuleId: Int, priceIncrements: Array[com.ib.client.PriceIncrement]): Unit = scribe.info(s"marketRule")
 
-  def mktDepthExchanges(depthMktDataDescriptions: Array[com.ib.client.DepthMktDataDescription]): Unit = scribe.info(s"AccountDownloadEnd")
+  def mktDepthExchanges(depthMktDataDescriptions: Array[com.ib.client.DepthMktDataDescription]): Unit = scribe.info(s"mktDepthExchanges")
 
-  def newsArticle(requestId: Int, articleType: Int, articleText: String): Unit = scribe.info(s"AccountDownloadEnd")
+  def newsArticle(requestId: Int, articleType: Int, articleText: String): Unit = scribe.info(s"newsArticle")
 
-  def newsProviders(newsProviders: Array[com.ib.client.NewsProvider]): Unit = scribe.info(s"AccountDownloadEnd")
+  def newsProviders(newsProviders: Array[com.ib.client.NewsProvider]): Unit = scribe.info(s"newsProviders")
 
   def nextValidId(orderId: Int): Unit =
     scribe.warn(s"nextValidId: $orderId")
@@ -203,7 +208,7 @@ class IBWrapper(clientId: Int)(using val F: Async[IO]) extends EWrapper {
 
   def openOrderEnd(): Unit = scribe.info(s"RS: OpenOrderEnd")
 
-  def orderBound(orderId: Long, apiClientId: Int, apiOrderId: Int): Unit = scribe.info(s"AccountDownloadEnd")
+  def orderBound(orderId: Long, apiClientId: Int, apiOrderId: Int): Unit = scribe.info(s"orderBound $orderId")
 
   def orderStatus(
       orderId: Int,
@@ -247,7 +252,7 @@ class IBWrapper(clientId: Int)(using val F: Async[IO]) extends EWrapper {
 
   /** Dispatches to all registered position handlers and then clears registered handlers */
   def positionEnd(): Unit =
-    scribe.info(s"AccountDownloadEnd")
+    scribe.info(s"positionEnd")
     positionsHandlers.foreach(ticket => ticket.positionEnd())
     positionsHandlers.clear() // Not sure if end is current list, or subscription cancelled
 
@@ -258,9 +263,9 @@ class IBWrapper(clientId: Int)(using val F: Async[IO]) extends EWrapper {
       contract: com.ib.client.Contract,
       pos: com.ib.client.Decimal,
       avgCost: Double
-  ): Unit = scribe.info(s"AccountDownloadEnd")
+  ): Unit = scribe.info(s"positionMulti $reqId")
 
-  def positionMultiEnd(reqId: Int): Unit = scribe.info(s"AccountDownloadEnd")
+  def positionMultiEnd(reqId: Int): Unit = scribe.info(s"positionMultiEnd $reqId")
 
   def realtimeBar(
       reqId: Int,
@@ -272,15 +277,15 @@ class IBWrapper(clientId: Int)(using val F: Async[IO]) extends EWrapper {
       volume: com.ib.client.Decimal,
       wap: com.ib.client.Decimal,
       count: Int
-  ): Unit = scribe.info(s"AccountDownloadEnd")
+  ): Unit = scribe.info(s"realtimeBar $reqId")
 
-  def receiveFA(faDataType: Int, xml: String): Unit = scribe.info(s"AccountDownloadEnd")
+  def receiveFA(faDataType: Int, xml: String): Unit = scribe.info(s"receiveFA")
 
-  def replaceFAEnd(reqId: Int, text: String): Unit = scribe.info(s"AccountDownloadEnd")
+  def replaceFAEnd(reqId: Int, text: String): Unit = scribe.info(s"replaceFAEnd")
 
-  def rerouteMktDataReq(reqId: Int, conId: Int, exchange: String): Unit = scribe.info(s"AccountDownloadEnd")
+  def rerouteMktDataReq(reqId: Int, conId: Int, exchange: String): Unit = scribe.info(s"rerouteMktDataReq")
 
-  def rerouteMktDepthReq(reqId: Int, conId: Int, exchange: String): Unit = scribe.info(s"AccountDownloadEnd")
+  def rerouteMktDepthReq(reqId: Int, conId: Int, exchange: String): Unit = scribe.info(s"rerouteMktDepthReq")
 
   def scannerData(
       reqId: Int,
@@ -290,11 +295,11 @@ class IBWrapper(clientId: Int)(using val F: Async[IO]) extends EWrapper {
       benchmark: String,
       projection: String,
       legsStr: String
-  ): Unit = scribe.info(s"AccountDownloadEnd")
+  ): Unit = scribe.info(s"scannerData")
 
-  def scannerDataEnd(reqId: Int): Unit = scribe.info(s"AccountDownloadEnd")
+  def scannerDataEnd(reqId: Int): Unit = scribe.info(s"scannerDataEnd")
 
-  def scannerParameters(xml: String): Unit = scribe.info(s"AccountDownloadEnd")
+  def scannerParameters(xml: String): Unit = scribe.info(s"scannerParameters")
 
   def securityDefinitionOptionalParameter(
       reqId: Int,
@@ -304,20 +309,22 @@ class IBWrapper(clientId: Int)(using val F: Async[IO]) extends EWrapper {
       multiplier: String,
       expirations: java.util.Set[java.lang.String],
       strikes: java.util.Set[java.lang.Double]
-  ): Unit = scribe.info(s"AccountDownloadEnd")
+  ): Unit = scribe.info(s"securityDefinitionOptionalParameter")
 
-  def securityDefinitionOptionalParameterEnd(reqId: Int): Unit = scribe.info(s"AccountDownloadEnd")
+  def securityDefinitionOptionalParameterEnd(reqId: Int): Unit = scribe.info(s"securityDefinitionOptionalParameterEnd")
 
   def smartComponents(reqId: Int, theMap: java.util.Map[Integer, java.util.Map.Entry[String, Character]]): Unit =
-    scribe.info(s"AccountDownloadEnd")
+    scribe.info(s"smartComponents")
 
-  def softDollarTiers(reqId: Int, tiers: Array[com.ib.client.SoftDollarTier]): Unit = scribe.info(s"AccountDownloadEnd")
+  def softDollarTiers(reqId: Int, tiers: Array[com.ib.client.SoftDollarTier]): Unit = scribe.info(s"softDollarTiers")
 
   override def symbolSamples(reqId: Int, contractDescriptions: Array[com.ib.client.ContractDescription]): Unit =
+    scribe.info(s"Symbol Samples $reqId")
     route(reqId, s"symbolSamples $reqId $contractDescriptions") {
       case ticket: MatchingSymbolsTicket =>
         val wrapper: Chain[ContractDescription] = Chain.fromSeq(contractDescriptions)
-        ticket.contractDetails(wrapper)
+        scribe.info(s"Calling Contract Details $reqId")
+        ticket.contractDetails(wrapper).unsafeRunSync()
     }
 
   override def tickByTickAllLast(
@@ -329,7 +336,7 @@ class IBWrapper(clientId: Int)(using val F: Async[IO]) extends EWrapper {
       tickAttribLast: com.ib.client.TickAttribLast,
       exchange: String,
       specialConditions: String
-  ): Unit = scribe.info(s"AccountDownloadEnd")
+  ): Unit = scribe.info(s"tickByTickAllLast")
 
   def tickByTickBidAsk(
       reqId: Int,
@@ -339,9 +346,9 @@ class IBWrapper(clientId: Int)(using val F: Async[IO]) extends EWrapper {
       bidSize: com.ib.client.Decimal,
       askSize: com.ib.client.Decimal,
       tickAttribBidAsk: com.ib.client.TickAttribBidAsk
-  ): Unit = scribe.info(s"AccountDownloadEnd")
+  ): Unit = scribe.info(s"tickByTickBidAsk")
 
-  def tickByTickMidPoint(reqId: Int, time: Long, midPoint: Double): Unit = scribe.info(s"AccountDownloadEnd")
+  def tickByTickMidPoint(reqId: Int, time: Long, midPoint: Double): Unit = scribe.info(s"tickByTickMidPoint")
 
   def tickEFP(
       tickerId: Int,
@@ -353,12 +360,12 @@ class IBWrapper(clientId: Int)(using val F: Async[IO]) extends EWrapper {
       futureLastTradeDate: String,
       dividendImpact: Double,
       dividendsToLastTradeDate: Double
-  ): Unit = scribe.info(s"AccountDownloadEnd")
+  ): Unit = scribe.info(s"tickEFP")
 
-  def tickGeneric(tickerId: Int, tickType: Int, value: Double): Unit = scribe.info(s"AccountDownloadEnd")
+  def tickGeneric(tickerId: Int, tickType: Int, value: Double): Unit = scribe.info(s"tickGeneric")
 
   def tickNews(tickerId: Int, timeStamp: Long, providerCode: String, articleId: String, headline: String, extraData: String): Unit =
-    scribe.info(s"AccountDownloadEnd")
+    scribe.info(s"tickNews")
 
   def tickOptionComputation(
       tickerId: Int,
@@ -372,18 +379,18 @@ class IBWrapper(clientId: Int)(using val F: Async[IO]) extends EWrapper {
       vega: Double,
       theta: Double,
       undPrice: Double
-  ): Unit = scribe.info(s"AccountDownloadEnd")
+  ): Unit = scribe.info(s"tickOptionComputation")
 
-  def tickPrice(tickerId: Int, field: Int, price: Double, attrib: com.ib.client.TickAttrib): Unit = scribe.info(s"AccountDownloadEnd")
+  def tickPrice(tickerId: Int, field: Int, price: Double, attrib: com.ib.client.TickAttrib): Unit = scribe.info(s"tickPrice")
 
   def tickReqParams(tickerId: Int, minTick: Double, bboExchange: String, snapshotPermissions: Int): Unit =
-    scribe.info(s"AccountDownloadEnd")
+    scribe.info(s"tickReqParams")
 
-  def tickSize(tickerId: Int, field: Int, size: com.ib.client.Decimal): Unit = scribe.info(s"AccountDownloadEnd")
+  def tickSize(tickerId: Int, field: Int, size: com.ib.client.Decimal): Unit = scribe.info(s"tickSize")
 
-  def tickSnapshotEnd(reqId: Int): Unit = scribe.info(s"AccountDownloadEnd")
+  def tickSnapshotEnd(reqId: Int): Unit = scribe.info(s"tickSnapshotEnd")
 
-  def tickString(tickerId: Int, tickType: Int, value: String): Unit = scribe.info(s"AccountDownloadEnd")
+  def tickString(tickerId: Int, tickType: Int, value: String): Unit = scribe.info(s"tickString")
 
   def updateAccountTime(timeStamp: String): Unit =
     scribe.info(s"updateAccountTime Local Date HH:MM $timeStamp")
@@ -393,7 +400,7 @@ class IBWrapper(clientId: Int)(using val F: Async[IO]) extends EWrapper {
     scribe.info(s"updateAccountValue $key -> $value $currency $accountName")
 
   def updateMktDepth(tickerId: Int, position: Int, operation: Int, side: Int, price: Double, size: com.ib.client.Decimal): Unit =
-    scribe.info(s"AccountDownloadEnd")
+    scribe.info(s"updateMktDepth")
 
   def updateMktDepthL2(
       tickerId: Int,
@@ -406,7 +413,7 @@ class IBWrapper(clientId: Int)(using val F: Async[IO]) extends EWrapper {
       isSmartDepth: Boolean
   ): Unit = ()
 
-  def updateNewsBulletin(msgId: Int, msgType: Int, message: String, origExchange: String): Unit = scribe.info(s"AccountDownloadEnd")
+  def updateNewsBulletin(msgId: Int, msgType: Int, message: String, origExchange: String): Unit = scribe.info(s"updateNewsBulletin")
 
   /** AccountUpdates */
   def updatePortfolio(
