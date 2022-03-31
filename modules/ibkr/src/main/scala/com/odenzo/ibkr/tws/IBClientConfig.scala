@@ -1,4 +1,4 @@
-package com.odenzo.ibkr.tws.models
+package com.odenzo.ibkr.tws
 
 import com.odenzo.ibkr.models.tws.SimpleTypes.IBAccount
 

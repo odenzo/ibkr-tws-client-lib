@@ -7,10 +7,12 @@ import cats.syntax.all.*
 import cats.effect.syntax.all.*
 import cats.effect.*
 import com.odenzo.ibkr.tws.commands.*
-import com.odenzo.ibkr.tws.models.{ConnectionInfo, IBClientConfig}
-import com.odenzo.ibkr.models.tws.{IBContract, *}
+import com.odenzo.ibkr.models.tws.*
 import com.odenzo.ibkr.models.tws.SimpleTypes.*
-import com.odenzo.ibkr.tws.commands.subscriptions.{AccountUpdatesTicket, PositionsTicket}
+import com.odenzo.ibkr.tws.callbacks.IBWrapper
+import com.odenzo.ibkr.tws.commands.single.*
+import com.odenzo.ibkr.tws.commands.hybrid.*
+import com.odenzo.ibkr.tws.commands.subscription.*
 
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger}
 import java.{lang, util}
@@ -27,19 +29,14 @@ class IBClient(val config: IBClientConfig, val wrapper: IBWrapper, val eClientSo
   def nextRequestId(): IO[RqId] = F.blocking(RqId(requestId.getAndIncrement()))
 
   final inline def server: EClientSocket = eClientSocket
-
-  def addTicket(ticket: TicketWithId): IO[Unit] = F.blocking(wrapper.add(ticket))
-
-  /* ----------------------------------------------------------------------------------------–––––-----------------------------------
-   * ---- THe Following Sections Has Callbacks Support for Request/Response for which only one request at a time is active. Typically
-   * ---- these supper Cancellation also, but not in a uniform way.
-   */
-  def addPositionsHandler(handler: PositionsTicket): Unit = wrapper.addPositionsHandler(handler)
-
-  /** There can be more than one account updates handler but only one subscription to one account */
-  def addAccountUpdatesHandler(handler: AccountUpdatesTicket) = wrapper.addAccountUpdatesHandler(handler)
-
-  def removeAccountUpdatesHandler(handler: AccountUpdatesTicket) = wrapper.removeAccountUpdatesHandler(handler)
+  export wrapper.{
+    add => addTicket,
+    remove => removeTicket,
+    addPositionsHandler,
+    clearPositionHandlers,
+    addAccountUpdatesHandler,
+    removeAccountUpdatesHandler
+  }
 
 }
 

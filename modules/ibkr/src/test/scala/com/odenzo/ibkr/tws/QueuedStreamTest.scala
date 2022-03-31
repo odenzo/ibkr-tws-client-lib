@@ -11,7 +11,7 @@ import munit.FunSuite
 
 import java.time.Instant
 import scala.concurrent.duration.{*, given}
-class PubSubComponentTest extends munit.CatsEffectSuite {
+class QueuedStreamTest extends munit.CatsEffectSuite {
 
   test("Queue") {
 

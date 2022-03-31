@@ -12,28 +12,36 @@ import com.odenzo.ibkr.models.tws.SimpleTypes.*
 import com.odenzo.ibkr.tws.IBClient
 import com.odenzo.ibkr.tws.commands.TicketWithId
 import com.odenzo.ibkr.tws.models.*
+import fs2.*
+import fs2.concurrent.Topic
+import fs2.concurrent.Topic.Closed
 
-class ContractQuoteTicket(val rqId: RqId, rq: Contract) extends TicketWithId {
+/** Not sure why this has info/end paradigm, only evey get one. Try a Topic instead of Queue even though most likely a single subcriber */
+class ContractDetailsTicket(val rqId: RqId, rq: Contract, val topic: Topic[IO, ContractDetails]) extends TicketWithId {
 
   private val initialResults = cats.data.Chain.empty[ContractDetails]
 
-  private val results = Ref.unsafe[IO, Chain[ContractDetails]](Chain.empty[ContractDetails])
+  // private val results = topic.subscribe(20).compile.toList
 
   /** Typically details per contract, but contract object can match multiple contracts */
-  def contractDetails(contractDetails: com.ib.client.ContractDetails): Unit =
-    scribe.info(s"CMD: Contract Details: ReqID: $rqId  $contractDetails")
+  def contractDetails(contractDetails: com.ib.client.ContractDetails): IO[Either[Closed, Unit]] =
+    scribe.info(s"CMD: Contract Details: ReqID: $rqId Topic: ${topic.isClosed}")
+    topic.publish1(contractDetails)
 
   /** When no further contract details are expected from the request */
-  def contractDetailsEnd(): Unit = scribe.info(s"CMD: Contract Details End $rqId")
+  def contractDetailsEnd(): IO[Either[Closed, Unit]] =
+    scribe.info(s"CMD: Contract Details End for ReqID  $rqId")
+    topic.close
 
 }
 
 /** One off contract quote, not streaming */
-case class ContractQuoteRq(contract: Contract) {
+case class ContractDetailsRq(contract: Contract) {
 
-  def submit()(using client: IBClient): IO[ContractQuoteTicket] = for {
+  def submit()(using client: IBClient): IO[ContractDetailsTicket] = for {
     id <- client.nextRequestId() // Boilerplate
-    ticket = ContractQuoteTicket(id, contract)
+    topic <- Topic[IO, ContractDetails]
+    ticket = ContractDetailsTicket(id, contract, topic)
     _     <- client.addTicket(ticket)
     _      = scribe.info(s"Submitting with $id Ticket: ${pprint(ticket)}")
     _      = client.server.reqContractDetails(id.toInt, contract)

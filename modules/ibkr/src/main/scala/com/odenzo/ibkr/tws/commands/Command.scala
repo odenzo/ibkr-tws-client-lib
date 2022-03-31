@@ -8,7 +8,7 @@ trait RqWithId extends IBRequest
 
 trait Ticket
 trait TicketWithCancel extends Ticket {
-  def cancel(): IO[Unit]
+  def cancelSubcription(): IO[Unit]
 }
 trait TicketWithId     extends Ticket {
   def rqId: RqId

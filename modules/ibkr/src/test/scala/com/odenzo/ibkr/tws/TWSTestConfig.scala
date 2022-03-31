@@ -1,7 +1,6 @@
 package com.odenzo.ibkr.tws
 
 import com.odenzo.ibkr.models.tws.SimpleTypes.IBAccount
-import com.odenzo.ibkr.tws.models.{ConnectionInfo, IBClientConfig}
 
 /** Orthogonal to what tets framework */
 trait TWSTestConfig {

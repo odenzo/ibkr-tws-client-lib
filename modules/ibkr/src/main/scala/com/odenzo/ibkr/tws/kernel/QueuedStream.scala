@@ -1,8 +1,8 @@
-package com.odenzo.ibkr.tws
+package com.odenzo.ibkr.tws.kernel
 
-import cats.effect.{Async, Concurrent, IO}
 import cats.effect.std.{Dispatcher, Queue}
-import cats.effect.syntax.{given, *}
+import cats.effect.syntax.{*, given}
+import cats.effect.{Async, Concurrent, IO}
 import fs2.Stream
 import fs2.concurrent.Topic
 
@@ -11,7 +11,7 @@ import fs2.concurrent.Topic
  * converting to T and allowing subscribers to access the Stream, rather than maintaining point-in-time state in the Ticket. Maybe useful?
  * Maybe a pain? This has to deal with not running on the callback thread of course, and enqueing quickly.
  */
-class PubSubComponent[T](val dispatcher: Dispatcher[IO], val queue: Queue[IO, Option[T]], val topic: Topic[IO, T]) {
+class QueuedStream[T](val dispatcher: Dispatcher[IO], val queue: Queue[IO, Option[T]], val topic: Topic[IO, T]) {
 
   /**
    * val writer: Stream[F. Unit] = topic.publish1(something) val reader: Stream[F, A] = topic.subscribe.something
@@ -22,7 +22,7 @@ class PubSubComponent[T](val dispatcher: Dispatcher[IO], val queue: Queue[IO, Op
   // def enqueue(v: Option[T]): Unit = dispatcher.enqueueNoneTerminated(queue).unsafeRunAndForget(q.offer(v))
   // fs2.concurrent.Channel
 }
-object PubSubComponent:
+object QueuedStream:
   private def createDispatcher[T](): Stream[IO, Dispatcher[IO]]                                  = fs2.Stream.resource(Dispatcher[IO])
   private def createQueue[T](): Stream[IO, Queue[IO, Option[T]]]                                 = fs2.Stream.eval(Queue.unbounded[IO, Option[T]])
   private def createTopic[F[_], T]()(using F: cats.effect.Concurrent[F]): Stream[F, Topic[F, T]] =

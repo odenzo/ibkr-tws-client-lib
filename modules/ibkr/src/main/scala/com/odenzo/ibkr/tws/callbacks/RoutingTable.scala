@@ -1,12 +1,15 @@
-package com.odenzo.ibkr.tws
+package com.odenzo.ibkr.tws.callbacks
 
+import cats.*
+import cats.data.*
+import cats.effect.*
+import cats.effect.syntax.all.*
+import com.odenzo.ibkr.models.tws.*
+import com.odenzo.ibkr.models.tws.SimpleTypes.*
 import com.odenzo.ibkr.tws.commands.*
 
-import com.odenzo.ibkr.models.tws.*
-import com.odenzo.ibkr.models.tws.SimpleTypes.*
+import scala.collection.concurrent.TrieMap
 import scala.collection.mutable
-import com.odenzo.ibkr.models.tws.*
-import com.odenzo.ibkr.models.tws.SimpleTypes.*
 
 /**
  * Usually one per IBWrapper, seperated out for future improvements and experiments. Note this is a mutable Map and we sometimes may leave
@@ -16,18 +19,21 @@ import com.odenzo.ibkr.models.tws.SimpleTypes.*
  */
 class RoutingTable(val clientId: Int) {
 
-  private val routes: mutable.Map[RqId, TicketWithId] = scala.collection.mutable.Map.empty
+  private val routes = TrieMap.empty[RqId, TicketWithId]
 
-  def add(id: RqId, ticket: TicketWithId): Unit =
+  def add(id: RqId, ticket: TicketWithId): IO[Unit] =
     scribe.info(s"Client $clientId Adding Rq $id to routine table")
-    routes.addOne(id -> ticket)
-  def remove(id: RqId): Option[TicketWithId]    =
-    val ticket = routes.remove(id)
-    ticket match {
-      case Some(ticket) => scribe.info(s"$clientId: Removed $id and matching Ticket $ticket")
-      case None         => scribe.warn(s"$clientId: Removing $id but not in routing table")
-    }
-    ticket
+    IO(routes.putIfAbsent(id, ticket)).void
+
+  def remove(id: RqId): IO[Unit] =
+    IO(routes.remove(id)).flatTap {
+      case Some(ticket) => IO(scribe.info(s"$clientId: Removed $id and matching Ticket $ticket"))
+      case None         => IO(scribe.warn(s"$clientId: Removing $id but not in routing table"))
+    }.void
+
+  def clear(id: RqId, ticket: TicketWithId): IO[Unit] =
+    scribe.info(s"Client $clientId Adding Rq $id to routine table")
+    IO(routes.clear())
 
   def get(id: RqId): Option[TicketWithId] = routes.get(id)
 

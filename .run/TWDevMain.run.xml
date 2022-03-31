@@ -6,7 +6,7 @@
     <module name="ibkr-tws" />
     <extension name="coverage">
       <pattern>
-        <option name="PATTERN" value="com.odenzo.ibkr.tws.models.*" />
+        <option name="PATTERN" value=".*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>
