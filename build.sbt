@@ -33,6 +33,7 @@ lazy val commonUtil = project
   .settings(
     name    := "odenzo-common-lib",
     libraryDependencies ++= Libs.all,
+    libraryDependencies ++= Libs.testLibs,
     version := "0.1.0"
   )
 
@@ -42,5 +43,6 @@ lazy val ibkr = project
   .settings(
     name                                := "ibkr-tws",
     libraryDependencies ++= Libs.all,
+    libraryDependencies ++= Libs.testLibs,
     libraryDependencies += "com.odenzo" %% "ibkr-models" % "0.0.1-SNAPSHOT"
   )
